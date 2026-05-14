@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日本卡追蹤">
 <meta name="theme-color" content="#fafaf7">
-<title>星展 eco · 日本刷卡追蹤</title>
+<title>日本刷卡追蹤</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23fafaf7'/><circle cx='90' cy='90' r='42' fill='%23C8102E'/></svg>">
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23fafaf7'/><circle cx='32' cy='32' r='15' fill='%23C8102E'/></svg>">
 <style>
@@ -53,7 +53,6 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  padding-env: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 body {
@@ -102,7 +101,6 @@ header .subtitle {
 }
 
 .btn-icon:active { background: var(--surface-2); }
-
 .btn-icon svg { width: 18px; height: 18px; }
 
 .card {
@@ -126,10 +124,66 @@ header .subtitle {
   letter-spacing: 0.02em;
 }
 
+/* Card chips selector */
+.card-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 4px 14px;
+  margin: 0 -16px 4px;
+  padding-left: 16px;
+  padding-right: 16px;
+  scrollbar-width: none;
+}
+.card-chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  cursor: pointer;
+  min-width: 130px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.chip.active {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+}
+
+.chip-name {
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.chip.active .chip-dot { background: var(--bg) !important; }
+
+.chip-rate {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chip.active .chip-rate { color: rgba(255,255,255,0.7); }
+
 .cap-card .top-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 8px;
 }
 
 .cap-card .status {
@@ -144,6 +198,7 @@ header .subtitle {
 .cap-card .status.info { background: rgba(31, 111, 235, 0.12); color: var(--info); }
 .cap-card .status.warn { background: rgba(180, 83, 9, 0.14); color: var(--warn); }
 .cap-card .status.danger { background: rgba(200, 16, 46, 0.12); color: var(--danger); }
+.cap-card .status.success { background: rgba(45, 134, 89, 0.14); color: var(--success); }
 
 .cap-card .amount {
   display: flex;
@@ -214,9 +269,7 @@ header .subtitle {
   margin: 0 0 10px;
 }
 
-.field {
-  margin-bottom: 12px;
-}
+.field { margin-bottom: 12px; }
 
 .field-label {
   display: block;
@@ -246,9 +299,7 @@ input[type="number"]:focus, input[type="text"]:focus {
   box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
 }
 
-.field-jpy {
-  position: relative;
-}
+.field-jpy { position: relative; }
 
 .field-jpy::before {
   content: "¥";
@@ -270,6 +321,8 @@ input[type="number"]:focus, input[type="text"]:focus {
   margin-bottom: 14px;
   gap: 12px;
 }
+
+.bonus-row.hidden { display: none; }
 
 .checkbox-label {
   display: flex;
@@ -329,6 +382,16 @@ button.secondary {
 button.secondary.danger { color: var(--danger); border-color: rgba(200, 16, 46, 0.3); }
 button.secondary:active { background: var(--surface-2); }
 
+.note-box {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
 .tx-header {
   display: flex;
   justify-content: space-between;
@@ -354,7 +417,7 @@ button.secondary:active { background: var(--surface-2); }
 }
 
 .tx-row:last-child { border-bottom: none; }
-.tx-row.no-bonus { opacity: 0.5; }
+.tx-row.no-bonus { opacity: 0.6; }
 
 .tx-info { flex: 1; min-width: 0; }
 
@@ -373,6 +436,17 @@ button.secondary:active { background: var(--surface-2); }
   font-variant-numeric: tabular-nums;
 }
 
+.tx-card-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  margin-right: 4px;
+  vertical-align: 1px;
+}
+
 .tx-delete {
   width: 32px;
   height: 32px;
@@ -388,7 +462,6 @@ button.secondary:active { background: var(--surface-2); }
 }
 
 .tx-delete:active { background: var(--surface-2); }
-
 .tx-delete svg { width: 16px; height: 16px; }
 
 .empty {
@@ -396,6 +469,44 @@ button.secondary:active { background: var(--surface-2); }
   color: var(--text-3);
   text-align: center;
   padding: 28px 0;
+}
+
+/* Card summary table */
+.summary-list {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 14px;
+  margin-bottom: 18px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 0.5px solid var(--border);
+  gap: 8px;
+}
+.summary-row:last-child { border-bottom: none; }
+
+.summary-name {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.summary-cb {
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-spent {
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
 }
 
 .modal {
@@ -417,6 +528,8 @@ button.secondary:active { background: var(--surface-2); }
   border-radius: 20px 20px 0 0;
   padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
   animation: slide-up 0.25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slide-up {
@@ -436,16 +549,6 @@ button.secondary:active { background: var(--surface-2); }
   margin: 6px 0 0;
   line-height: 1.45;
 }
-
-.sun {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-right: 6px;
-  vertical-align: 1px;
-}
 </style>
 </head>
 <body>
@@ -454,22 +557,24 @@ button.secondary:active { background: var(--surface-2); }
 
   <header>
     <div>
-      <p class="title"><span class="sun"></span>星展 eco · 日本追蹤</p>
-      <p class="subtitle">5% 加碼 · 每期上限 NT$15,000</p>
+      <p class="title">日本刷卡追蹤</p>
+      <p class="subtitle">2026 上半年 · 多卡回饋管理</p>
     </div>
     <button class="btn-icon" onclick="toggleSettings()" aria-label="設定">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </header>
 
+  <div class="card-chips" id="card-chips"></div>
+
   <div class="card-flat cap-card">
     <div class="top-row">
-      <span class="label">加碼額度已用</span>
+      <span class="label" id="cap-label">加碼額度已用</span>
       <span id="cap-status" class="status">尚未開始</span>
     </div>
     <div class="amount">
       <span id="cap-used" class="num">NT$0</span>
-      <span class="denom">/ NT$15,000</span>
+      <span id="cap-denom" class="denom">/ NT$15,000</span>
     </div>
     <div class="progress-track"><div id="progress" class="progress-fill" style="width: 0%;"></div></div>
     <p id="hint" class="hint">新增第一筆消費開始追蹤</p>
@@ -477,14 +582,14 @@ button.secondary:active { background: var(--surface-2); }
 
   <div class="stat-grid">
     <div class="card-flat" style="margin: 0;">
-      <div class="label">已賺回饋</div>
-      <div class="stat-num" id="cashback">0</div>
-      <div class="stat-sub">現金積點 · 1 點 = NT$1</div>
+      <div class="label">本卡回饋</div>
+      <div class="stat-num" id="card-cashback">0</div>
+      <div class="stat-sub" id="card-spent">已刷 NT$0</div>
     </div>
     <div class="card-flat" style="margin: 0;">
-      <div class="label">已刷總額</div>
-      <div class="stat-num" id="total-twd">NT$0</div>
-      <div class="stat-sub" id="total-jpy">¥0</div>
+      <div class="label">全部卡片合計</div>
+      <div class="stat-num" id="total-cashback">0</div>
+      <div class="stat-sub" id="total-spent">已刷 NT$0 · ¥0</div>
     </div>
   </div>
 
@@ -498,18 +603,22 @@ button.secondary:active { background: var(--surface-2); }
       <label class="field-label">備註(選填)</label>
       <input type="text" id="note-input" placeholder="例如:松本清、一蘭" />
     </div>
-    <div class="bonus-row">
+    <p class="note-box" id="card-note"></p>
+    <div class="bonus-row" id="bonus-row">
       <label class="checkbox-label">
         <input type="checkbox" id="bonus-check" checked />
-        <span>符合 5% 加碼</span>
+        <span id="bonus-label">符合加碼</span>
       </label>
       <span id="preview-twd" class="preview">≈ NT$0</span>
     </div>
-    <button class="primary" onclick="addTx()">新增</button>
+    <button class="primary" onclick="addTx()">新增到此卡</button>
   </div>
 
+  <p class="section-title" style="margin: 18px 4px 10px;">各卡回饋總覽</p>
+  <div class="summary-list" id="summary-list"></div>
+
   <div class="tx-header">
-    <p class="section-title" style="margin: 0;">本期消費</p>
+    <p class="section-title" style="margin: 0;">本卡消費紀錄</p>
     <span id="tx-count" style="font-size: 12px; color: var(--text-2);"></span>
   </div>
   <div class="tx-list" id="tx-list"></div>
@@ -525,21 +634,93 @@ button.secondary:active { background: var(--surface-2); }
       <p class="rate-hint">建議用實際刷卡匯率(現匯約 0.20,刷卡入帳約 0.21,VISA/Master 各家略異)</p>
     </div>
     <button class="primary" onclick="saveSettings()">儲存匯率</button>
-    <button class="secondary danger" onclick="resetPeriod()">重置本期(新帳單週期)</button>
+    <button class="secondary danger" onclick="resetCurrentCard()">清空目前卡片紀錄</button>
+    <button class="secondary danger" onclick="resetAll()">重置全部(新帳單週期)</button>
     <button class="secondary" onclick="exportData()">匯出資料(JSON)</button>
     <button class="secondary" onclick="toggleSettings()">關閉</button>
   </div>
 </div>
 
 <script>
-const KEY = 'dbs_eco_tracker_v1';
-const CAP_TWD = 15000;
-let state = { transactions: [], fxRate: 0.21 };
+const KEY = 'jp_card_tracker_v2';
+
+// 2026 H1 卡片設定
+const CARDS = {
+  dbs_eco: {
+    name: '星展 eco',
+    short: 'eco',
+    color: '#C8102E',
+    baseRate: 0.01,
+    bonusRate: 0.05,
+    bonusCapTwd: 15000,
+    bonusLabel: '符合 5% 加碼',
+    note: '海外實體刷卡或 Apple/Samsung Pay。加碼 4% 每期上限 600 點(≈刷 NT$15,000),超過只剩 1%。'
+  },
+  dbs_eco_ez: {
+    name: '星展 eco 極簡',
+    short: 'eco極簡',
+    color: '#FF8C42',
+    baseRate: 0.01,
+    bonusRate: 0.05,
+    bonusCapTwd: 15000,
+    bonusLabel: '符合 5% 加碼',
+    note: '海外實體刷卡或行動支付。加碼 4% 每期上限 600 點(≈刷 NT$15,000),超過只剩 1%。'
+  },
+  ub_jiho: {
+    name: '聯邦吉鶴',
+    short: '吉鶴',
+    color: '#E60012',
+    baseRate: 0.025,
+    bonusRate: null,
+    bonusCapTwd: null,
+    note: '日幣消費 2.5% 無上限。加 Apple Pay+前期帳單滿3萬可達 5%;指定通路、新戶加碼最高 11%(此處只計 2.5% 基礎)。'
+  },
+  esun_kumamon: {
+    name: '玉山熊本熊',
+    short: '熊本熊',
+    color: '#1a1a1a',
+    baseRate: 0.025,
+    bonusRate: 0.085,
+    bonusCapTwd: 8333,
+    bonusLabel: '指定店 8.5% 加碼',
+    note: '日本一般 2.5% 無上限;指定店加碼 +6%(8.5%)每期上限 500 點(≈刷 NT$8,333),超過回到 2.5%。'
+  },
+  taishin_richart: {
+    name: '台新 Richart',
+    short: 'Richart',
+    color: '#E84A6D',
+    baseRate: 0.033,
+    bonusRate: null,
+    bonusCapTwd: null,
+    note: '玩旅刷海外 3.3% 無上限。4/1 起美元帳戶 ≥ US$700 可達 8.5%(此處按 3.3% 計算)。'
+  }
+};
+
+const CARD_ORDER = ['dbs_eco', 'dbs_eco_ez', 'ub_jiho', 'esun_kumamon', 'taishin_richart'];
+
+let state = {
+  transactions: [],
+  fxRate: 0.21,
+  activeCardId: 'dbs_eco'
+};
 
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) state = Object.assign(state, JSON.parse(raw));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      Object.assign(state, parsed);
+    } else {
+      // Migrate v1
+      const v1 = localStorage.getItem('dbs_eco_tracker_v1');
+      if (v1) {
+        const old = JSON.parse(v1);
+        state.transactions = (old.transactions || []).map(t => ({ ...t, cardId: 'dbs_eco' }));
+        state.fxRate = old.fxRate || 0.21;
+      }
+    }
+    // Ensure all transactions have a cardId
+    state.transactions.forEach(tx => { if (!tx.cardId || !CARDS[tx.cardId]) tx.cardId = 'dbs_eco'; });
   } catch (e) {}
   render();
 }
@@ -548,69 +729,178 @@ function saveState() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
 }
 
-function render() {
-  let bonusRunning = 0;
-  let totalTwd = 0;
+function computeCardStats(cardId) {
+  const card = CARDS[cardId];
+  const txs = state.transactions.filter(t => t.cardId === cardId);
+  let bonusSpent = 0;
+  let totalSpent = 0;
   let totalJpy = 0;
   let cashback = 0;
 
-  state.transactions.forEach(tx => {
-    totalTwd += tx.twd;
+  txs.forEach(tx => {
+    totalSpent += tx.twd;
     totalJpy += tx.jpy;
-    if (tx.bonus) {
-      const room = Math.max(0, CAP_TWD - bonusRunning);
+    if (card.bonusRate != null && tx.bonus) {
+      const room = Math.max(0, card.bonusCapTwd - bonusSpent);
       const bonusPart = Math.min(tx.twd, room);
       const basePart = tx.twd - bonusPart;
-      cashback += bonusPart * 0.05 + basePart * 0.01;
-      bonusRunning += tx.twd;
+      cashback += bonusPart * card.bonusRate + basePart * card.baseRate;
+      bonusSpent += tx.twd;
     } else {
-      cashback += tx.twd * 0.01;
+      cashback += tx.twd * card.baseRate;
     }
   });
 
-  const usedTwd = Math.min(bonusRunning, CAP_TWD);
-  const pct = Math.min(100, (usedTwd / CAP_TWD) * 100);
+  return {
+    txs,
+    cashback,
+    totalSpent,
+    totalJpy,
+    bonusSpent,
+    bonusCapUsed: card.bonusCapTwd ? Math.min(bonusSpent, card.bonusCapTwd) : 0,
+    bonusRoomLeft: card.bonusCapTwd ? Math.max(0, card.bonusCapTwd - bonusSpent) : null
+  };
+}
 
-  document.getElementById('cap-used').textContent = 'NT$' + Math.round(usedTwd).toLocaleString();
-  const pf = document.getElementById('progress');
-  pf.style.width = pct + '%';
-  pf.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 80 ? ' warn' : '');
+function renderChips() {
+  const wrap = document.getElementById('card-chips');
+  wrap.innerHTML = CARD_ORDER.map(id => {
+    const c = CARDS[id];
+    const s = computeCardStats(id);
+    let rateText;
+    if (c.bonusRate != null) {
+      if (s.bonusRoomLeft > 0) {
+        rateText = (c.bonusRate * 100) + '% · 剩 NT$' + Math.round(s.bonusRoomLeft).toLocaleString();
+      } else {
+        rateText = (c.baseRate * 100) + '% (加碼用完)';
+      }
+    } else {
+      rateText = (c.baseRate * 100) + '% 無上限';
+    }
+    const active = id === state.activeCardId ? ' active' : '';
+    return '<div class="chip' + active + '" onclick="selectCard(\'' + id + '\')">' +
+      '<div class="chip-name"><span class="chip-dot" style="background:' + c.color + '"></span>' + c.short + '</div>' +
+      '<div class="chip-rate">' + rateText + '</div>' +
+    '</div>';
+  }).join('');
+}
 
-  const remaining = CAP_TWD - bonusRunning;
+function selectCard(id) {
+  state.activeCardId = id;
+  saveState();
+  render();
+}
+
+function render() {
+  renderChips();
+
+  const card = CARDS[state.activeCardId];
+  const s = computeCardStats(state.activeCardId);
+
+  // Cap card
+  const capLabel = document.getElementById('cap-label');
+  const capUsed = document.getElementById('cap-used');
+  const capDenom = document.getElementById('cap-denom');
+  const progress = document.getElementById('progress');
   const statusEl = document.getElementById('cap-status');
   const hintEl = document.getElementById('hint');
 
-  if (state.transactions.length === 0) {
-    statusEl.textContent = '尚未開始';
-    statusEl.className = 'status';
-    hintEl.textContent = '新增第一筆消費開始追蹤';
-  } else if (remaining > 2000) {
-    statusEl.textContent = '進行中';
-    statusEl.className = 'status info';
-    hintEl.textContent = '加碼還可刷 NT$' + Math.round(remaining).toLocaleString() + ' 享 4% 加碼';
-  } else if (remaining > 0) {
-    statusEl.textContent = '快達上限';
-    statusEl.className = 'status warn';
-    hintEl.textContent = '注意!加碼只剩 NT$' + Math.round(remaining).toLocaleString() + ',刷完就只剩 1% 基本回饋';
+  if (card.bonusCapTwd != null) {
+    capLabel.textContent = card.bonusLabel.replace('符合 ', '').replace(' 加碼', '') + ' 額度已用';
+    capUsed.textContent = 'NT$' + Math.round(s.bonusCapUsed).toLocaleString();
+    capDenom.textContent = '/ NT$' + card.bonusCapTwd.toLocaleString();
+    const pct = Math.min(100, (s.bonusCapUsed / card.bonusCapTwd) * 100);
+    progress.style.width = pct + '%';
+    progress.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 80 ? ' warn' : '');
+
+    const remaining = s.bonusRoomLeft;
+    if (s.txs.length === 0) {
+      statusEl.textContent = '尚未開始';
+      statusEl.className = 'status';
+      hintEl.textContent = '新增第一筆消費開始追蹤';
+    } else if (remaining > 2000) {
+      statusEl.textContent = '進行中';
+      statusEl.className = 'status info';
+      hintEl.textContent = '加碼還可刷 NT$' + Math.round(remaining).toLocaleString();
+    } else if (remaining > 0) {
+      statusEl.textContent = '快達上限';
+      statusEl.className = 'status warn';
+      hintEl.textContent = '注意!加碼只剩 NT$' + Math.round(remaining).toLocaleString() + ',刷完只剩 ' + (card.baseRate * 100) + '% 基本回饋';
+    } else {
+      statusEl.textContent = '已達上限';
+      statusEl.className = 'status danger';
+      hintEl.textContent = '加碼已達上限,建議換其他卡繼續刷';
+    }
   } else {
-    statusEl.textContent = '已達上限';
-    statusEl.className = 'status danger';
-    hintEl.textContent = '加碼已達上限,建議換其他海外卡繼續刷';
+    // No cap card
+    capLabel.textContent = '本卡日本累積';
+    capUsed.textContent = 'NT$' + Math.round(s.totalSpent).toLocaleString();
+    capDenom.textContent = '· ' + (card.baseRate * 100) + '% 無上限';
+    progress.style.width = '100%';
+    progress.className = 'progress-fill';
+    progress.style.background = card.color;
+    statusEl.textContent = s.txs.length === 0 ? '尚未開始' : '無上限';
+    statusEl.className = 'status' + (s.txs.length === 0 ? '' : ' success');
+    hintEl.textContent = s.txs.length === 0 ? '新增第一筆消費開始追蹤' : '此卡無加碼上限,持續刷享 ' + (card.baseRate * 100) + '%';
   }
 
-  document.getElementById('cashback').textContent = Math.round(cashback).toLocaleString() + ' 點';
-  document.getElementById('total-twd').textContent = 'NT$' + Math.round(totalTwd).toLocaleString();
-  document.getElementById('total-jpy').textContent = '¥' + Math.round(totalJpy).toLocaleString();
-  document.getElementById('tx-count').textContent = state.transactions.length + ' 筆';
+  // Reset progress bg if previously set
+  if (card.bonusCapTwd != null) {
+    progress.style.background = '';
+  }
 
+  // Card cashback / spent
+  document.getElementById('card-cashback').textContent = Math.round(s.cashback).toLocaleString() + ' 點';
+  document.getElementById('card-spent').textContent = '已刷 NT$' + Math.round(s.totalSpent).toLocaleString();
+
+  // Total across all cards
+  let totalCashback = 0, totalSpent = 0, totalJpy = 0;
+  CARD_ORDER.forEach(id => {
+    const cs = computeCardStats(id);
+    totalCashback += cs.cashback;
+    totalSpent += cs.totalSpent;
+    totalJpy += cs.totalJpy;
+  });
+  document.getElementById('total-cashback').textContent = Math.round(totalCashback).toLocaleString() + ' 點';
+  document.getElementById('total-spent').textContent = '已刷 NT$' + Math.round(totalSpent).toLocaleString() + ' · ¥' + Math.round(totalJpy).toLocaleString();
+
+  // Note + bonus row visibility
+  document.getElementById('card-note').textContent = card.note;
+  const bonusRow = document.getElementById('bonus-row');
+  if (card.bonusRate != null) {
+    bonusRow.classList.remove('hidden');
+    document.getElementById('bonus-label').textContent = card.bonusLabel;
+  } else {
+    bonusRow.classList.add('hidden');
+  }
+  updatePreview();
+
+  // Summary list
+  const sumEl = document.getElementById('summary-list');
+  sumEl.innerHTML = CARD_ORDER.map(id => {
+    const c = CARDS[id];
+    const cs = computeCardStats(id);
+    const isActive = id === state.activeCardId;
+    return '<div class="summary-row" onclick="selectCard(\'' + id + '\')" style="cursor:pointer;' + (isActive ? 'background:var(--surface-2);margin:0 -14px;padding-left:14px;padding-right:14px;border-radius:6px;' : '') + '">' +
+      '<div>' +
+        '<div class="summary-name"><span class="chip-dot" style="background:' + c.color + '"></span>' + c.name + '</div>' +
+        '<div class="summary-spent">已刷 NT$' + Math.round(cs.totalSpent).toLocaleString() + ' · ' + cs.txs.length + ' 筆</div>' +
+      '</div>' +
+      '<div class="summary-cb">' + Math.round(cs.cashback).toLocaleString() + ' 點</div>' +
+    '</div>';
+  }).join('');
+
+  // TX list (filter by active card)
   const listEl = document.getElementById('tx-list');
-  if (state.transactions.length === 0) {
+  const cardTxs = s.txs;
+  document.getElementById('tx-count').textContent = cardTxs.length + ' 筆';
+  if (cardTxs.length === 0) {
     listEl.innerHTML = '<p class="empty">尚無消費紀錄</p>';
   } else {
-    listEl.innerHTML = state.transactions.slice().reverse().map(tx => {
+    listEl.innerHTML = cardTxs.slice().reverse().map(tx => {
       const note = tx.note ? ' · <span style="color: var(--text-2);">' + escapeHtml(tx.note) + '</span>' : '';
-      const flag = tx.bonus ? '' : ' · 無加碼';
-      return '<div class="tx-row' + (tx.bonus ? '' : ' no-bonus') + '">' +
+      const flag = (card.bonusRate != null && !tx.bonus) ? ' · 無加碼' : '';
+      return '<div class="tx-row' + (card.bonusRate != null && !tx.bonus ? ' no-bonus' : '') + '">' +
         '<div class="tx-info">' +
           '<div class="tx-main">¥' + tx.jpy.toLocaleString() + note + '</div>' +
           '<div class="tx-meta">NT$' + Math.round(tx.twd).toLocaleString() + flag + '</div>' +
@@ -629,6 +919,30 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function updatePreview() {
+  const jpy = parseFloat(document.getElementById('jpy-input').value);
+  const card = CARDS[state.activeCardId];
+  const bonus = document.getElementById('bonus-check').checked;
+  if (!jpy || jpy <= 0) {
+    document.getElementById('preview-twd').textContent = '≈ NT$0';
+    return;
+  }
+  const twd = jpy * state.fxRate;
+  // Estimate cashback for this single tx given current cap usage
+  const s = computeCardStats(state.activeCardId);
+  let cb = 0;
+  if (card.bonusRate != null && bonus) {
+    const room = Math.max(0, card.bonusCapTwd - s.bonusSpent);
+    const bonusPart = Math.min(twd, room);
+    const basePart = twd - bonusPart;
+    cb = bonusPart * card.bonusRate + basePart * card.baseRate;
+  } else {
+    cb = twd * card.baseRate;
+  }
+  document.getElementById('preview-twd').textContent =
+    '≈ NT$' + Math.round(twd).toLocaleString() + ' · 回饋 ' + Math.round(cb) + ' 點';
+}
+
 function addTx() {
   const jpyEl = document.getElementById('jpy-input');
   const noteEl = document.getElementById('note-input');
@@ -638,6 +952,7 @@ function addTx() {
 
   state.transactions.push({
     id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    cardId: state.activeCardId,
     jpy: jpy,
     twd: jpy * state.fxRate,
     bonus: bonusEl.checked,
@@ -647,7 +962,6 @@ function addTx() {
   jpyEl.value = '';
   noteEl.value = '';
   bonusEl.checked = true;
-  document.getElementById('preview-twd').textContent = '≈ NT$0';
   saveState();
   render();
   jpyEl.focus();
@@ -671,8 +985,17 @@ function saveSettings() {
   render();
 }
 
-function resetPeriod() {
-  if (!confirm('確定要清空本期所有消費紀錄?\n(用於新的帳單週期開始)')) return;
+function resetCurrentCard() {
+  const card = CARDS[state.activeCardId];
+  if (!confirm('確定要清空「' + card.name + '」的所有消費紀錄?')) return;
+  state.transactions = state.transactions.filter(t => t.cardId !== state.activeCardId);
+  saveState();
+  toggleSettings();
+  render();
+}
+
+function resetAll() {
+  if (!confirm('確定要清空所有卡片的消費紀錄?\n(用於新的帳單週期開始)')) return;
   state.transactions = [];
   saveState();
   toggleSettings();
@@ -684,18 +1007,13 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'dbs_eco_japan_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.download = 'jp_card_tracker_' + new Date().toISOString().slice(0, 10) + '.json';
   a.click();
   URL.revokeObjectURL(url);
 }
 
-document.getElementById('jpy-input').addEventListener('input', e => {
-  const jpy = parseFloat(e.target.value);
-  document.getElementById('preview-twd').textContent = (jpy && jpy > 0)
-    ? '≈ NT$' + Math.round(jpy * state.fxRate).toLocaleString()
-    : '≈ NT$0';
-});
-
+document.getElementById('jpy-input').addEventListener('input', updatePreview);
+document.getElementById('bonus-check').addEventListener('change', updatePreview);
 document.getElementById('jpy-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') addTx();
 });
