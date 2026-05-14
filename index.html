@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日本卡追蹤">
+<meta name="theme-color" content="#fafaf7">
+<title>星展 eco · 日本刷卡追蹤</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23fafaf7'/><circle cx='90' cy='90' r='42' fill='%23C8102E'/></svg>">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23fafaf7'/><circle cx='32' cy='32' r='15' fill='%23C8102E'/></svg>">
+<style>
+:root {
+  --bg: #fafaf7;
+  --surface: #ffffff;
+  --surface-2: #f3f2ed;
+  --text: #1a1a1a;
+  --text-2: #6b6b68;
+  --text-3: #a3a39e;
+  --border: rgba(26, 26, 26, 0.09);
+  --accent: #C8102E;
+  --info: #1f6feb;
+  --warn: #b45309;
+  --danger: #C8102E;
+  --success: #2d8659;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141413;
+    --surface: #1f1f1d;
+    --surface-2: #2a2a27;
+    --text: #f5f5f0;
+    --text-2: #a8a8a2;
+    --text-3: #6b6b68;
+    --border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-env: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px 16px 80px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 4px 18px;
+}
+
+header .title {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+header .subtitle {
+  font-size: 12px;
+  color: var(--text-2);
+  margin: 3px 0 0;
+}
+
+.btn-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-2);
+  transition: background 0.15s;
+}
+
+.btn-icon:active { background: var(--surface-2); }
+
+.btn-icon svg { width: 18px; height: 18px; }
+
+.card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.card-flat {
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+
+.cap-card .top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.cap-card .status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+.cap-card .status.info { background: rgba(31, 111, 235, 0.12); color: var(--info); }
+.cap-card .status.warn { background: rgba(180, 83, 9, 0.14); color: var(--warn); }
+.cap-card .status.danger { background: rgba(200, 16, 46, 0.12); color: var(--danger); }
+
+.cap-card .amount {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cap-card .num {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.cap-card .denom {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.progress-track {
+  height: 7px;
+  background: var(--surface);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--info);
+  border-radius: 100px;
+  transition: width 0.4s ease, background 0.3s;
+}
+
+.progress-fill.warn { background: var(--warn); }
+.progress-fill.danger { background: var(--danger); }
+
+.hint {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.stat-grid .stat-num {
+  font-size: 22px;
+  font-weight: 500;
+  margin-top: 3px;
+  letter-spacing: -0.01em;
+}
+
+.stat-grid .stat-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-2);
+  margin-bottom: 5px;
+}
+
+input[type="number"], input[type="text"] {
+  width: 100%;
+  height: 44px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="number"]:focus, input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+}
+
+.field-jpy {
+  position: relative;
+}
+
+.field-jpy::before {
+  content: "¥";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-2);
+  font-size: 16px;
+  z-index: 1;
+}
+
+.field-jpy input { padding-left: 32px; font-size: 18px; }
+
+.bonus-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+.preview {
+  font-size: 14px;
+  color: var(--text-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+button.primary {
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--text);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+button.primary:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}
+
+button.secondary {
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 0.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+button.secondary.danger { color: var(--danger); border-color: rgba(200, 16, 46, 0.3); }
+button.secondary:active { background: var(--surface-2); }
+
+.tx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0 12px;
+  padding: 0 4px;
+}
+
+.tx-list {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 14px;
+}
+
+.tx-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 0.5px solid var(--border);
+  gap: 12px;
+}
+
+.tx-row:last-child { border-bottom: none; }
+.tx-row.no-bonus { opacity: 0.5; }
+
+.tx-info { flex: 1; min-width: 0; }
+
+.tx-main {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-meta {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tx-delete:active { background: var(--surface-2); }
+
+.tx-delete svg { width: 16px; height: 16px; }
+
+.empty {
+  font-size: 14px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 28px 0;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal.open { display: flex; }
+
+.modal-content {
+  background: var(--bg);
+  width: 100%;
+  max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  padding: 22px 18px calc(22px + env(safe-area-inset-bottom));
+  animation: slide-up 0.25s ease;
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+
+.rate-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+.sun {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div>
+      <p class="title"><span class="sun"></span>星展 eco · 日本追蹤</p>
+      <p class="subtitle">5% 加碼 · 每期上限 NT$15,000</p>
+    </div>
+    <button class="btn-icon" onclick="toggleSettings()" aria-label="設定">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <div class="card-flat cap-card">
+    <div class="top-row">
+      <span class="label">加碼額度已用</span>
+      <span id="cap-status" class="status">尚未開始</span>
+    </div>
+    <div class="amount">
+      <span id="cap-used" class="num">NT$0</span>
+      <span class="denom">/ NT$15,000</span>
+    </div>
+    <div class="progress-track"><div id="progress" class="progress-fill" style="width: 0%;"></div></div>
+    <p id="hint" class="hint">新增第一筆消費開始追蹤</p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="card-flat" style="margin: 0;">
+      <div class="label">已賺回饋</div>
+      <div class="stat-num" id="cashback">0</div>
+      <div class="stat-sub">現金積點 · 1 點 = NT$1</div>
+    </div>
+    <div class="card-flat" style="margin: 0;">
+      <div class="label">已刷總額</div>
+      <div class="stat-num" id="total-twd">NT$0</div>
+      <div class="stat-sub" id="total-jpy">¥0</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-title">新增消費</p>
+    <div class="field field-jpy">
+      <label class="field-label">日幣金額</label>
+      <input type="number" id="jpy-input" placeholder="0" inputmode="decimal" />
+    </div>
+    <div class="field">
+      <label class="field-label">備註(選填)</label>
+      <input type="text" id="note-input" placeholder="例如:松本清、一蘭" />
+    </div>
+    <div class="bonus-row">
+      <label class="checkbox-label">
+        <input type="checkbox" id="bonus-check" checked />
+        <span>符合 5% 加碼</span>
+      </label>
+      <span id="preview-twd" class="preview">≈ NT$0</span>
+    </div>
+    <button class="primary" onclick="addTx()">新增</button>
+  </div>
+
+  <div class="tx-header">
+    <p class="section-title" style="margin: 0;">本期消費</p>
+    <span id="tx-count" style="font-size: 12px; color: var(--text-2);"></span>
+  </div>
+  <div class="tx-list" id="tx-list"></div>
+
+</div>
+
+<div class="modal" id="settings-modal" onclick="if(event.target===this)toggleSettings()">
+  <div class="modal-content">
+    <p class="modal-title">設定</p>
+    <div class="field">
+      <label class="field-label">JPY → TWD 匯率(1 ¥ = ? NT$)</label>
+      <input type="number" id="fx-input" step="0.001" inputmode="decimal" />
+      <p class="rate-hint">建議用實際刷卡匯率(現匯約 0.20,刷卡入帳約 0.21,VISA/Master 各家略異)</p>
+    </div>
+    <button class="primary" onclick="saveSettings()">儲存匯率</button>
+    <button class="secondary danger" onclick="resetPeriod()">重置本期(新帳單週期)</button>
+    <button class="secondary" onclick="exportData()">匯出資料(JSON)</button>
+    <button class="secondary" onclick="toggleSettings()">關閉</button>
+  </div>
+</div>
+
+<script>
+const KEY = 'dbs_eco_tracker_v1';
+const CAP_TWD = 15000;
+let state = { transactions: [], fxRate: 0.21 };
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) state = Object.assign(state, JSON.parse(raw));
+  } catch (e) {}
+  render();
+}
+
+function saveState() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function render() {
+  let bonusRunning = 0;
+  let totalTwd = 0;
+  let totalJpy = 0;
+  let cashback = 0;
+
+  state.transactions.forEach(tx => {
+    totalTwd += tx.twd;
+    totalJpy += tx.jpy;
+    if (tx.bonus) {
+      const room = Math.max(0, CAP_TWD - bonusRunning);
+      const bonusPart = Math.min(tx.twd, room);
+      const basePart = tx.twd - bonusPart;
+      cashback += bonusPart * 0.05 + basePart * 0.01;
+      bonusRunning += tx.twd;
+    } else {
+      cashback += tx.twd * 0.01;
+    }
+  });
+
+  const usedTwd = Math.min(bonusRunning, CAP_TWD);
+  const pct = Math.min(100, (usedTwd / CAP_TWD) * 100);
+
+  document.getElementById('cap-used').textContent = 'NT$' + Math.round(usedTwd).toLocaleString();
+  const pf = document.getElementById('progress');
+  pf.style.width = pct + '%';
+  pf.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 80 ? ' warn' : '');
+
+  const remaining = CAP_TWD - bonusRunning;
+  const statusEl = document.getElementById('cap-status');
+  const hintEl = document.getElementById('hint');
+
+  if (state.transactions.length === 0) {
+    statusEl.textContent = '尚未開始';
+    statusEl.className = 'status';
+    hintEl.textContent = '新增第一筆消費開始追蹤';
+  } else if (remaining > 2000) {
+    statusEl.textContent = '進行中';
+    statusEl.className = 'status info';
+    hintEl.textContent = '加碼還可刷 NT$' + Math.round(remaining).toLocaleString() + ' 享 4% 加碼';
+  } else if (remaining > 0) {
+    statusEl.textContent = '快達上限';
+    statusEl.className = 'status warn';
+    hintEl.textContent = '注意!加碼只剩 NT$' + Math.round(remaining).toLocaleString() + ',刷完就只剩 1% 基本回饋';
+  } else {
+    statusEl.textContent = '已達上限';
+    statusEl.className = 'status danger';
+    hintEl.textContent = '加碼已達上限,建議換其他海外卡繼續刷';
+  }
+
+  document.getElementById('cashback').textContent = Math.round(cashback).toLocaleString() + ' 點';
+  document.getElementById('total-twd').textContent = 'NT$' + Math.round(totalTwd).toLocaleString();
+  document.getElementById('total-jpy').textContent = '¥' + Math.round(totalJpy).toLocaleString();
+  document.getElementById('tx-count').textContent = state.transactions.length + ' 筆';
+
+  const listEl = document.getElementById('tx-list');
+  if (state.transactions.length === 0) {
+    listEl.innerHTML = '<p class="empty">尚無消費紀錄</p>';
+  } else {
+    listEl.innerHTML = state.transactions.slice().reverse().map(tx => {
+      const note = tx.note ? ' · <span style="color: var(--text-2);">' + escapeHtml(tx.note) + '</span>' : '';
+      const flag = tx.bonus ? '' : ' · 無加碼';
+      return '<div class="tx-row' + (tx.bonus ? '' : ' no-bonus') + '">' +
+        '<div class="tx-info">' +
+          '<div class="tx-main">¥' + tx.jpy.toLocaleString() + note + '</div>' +
+          '<div class="tx-meta">NT$' + Math.round(tx.twd).toLocaleString() + flag + '</div>' +
+        '</div>' +
+        '<button class="tx-delete" onclick="removeTx(\'' + tx.id + '\')" aria-label="刪除">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+        '</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  document.getElementById('fx-input').value = state.fxRate;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function addTx() {
+  const jpyEl = document.getElementById('jpy-input');
+  const noteEl = document.getElementById('note-input');
+  const bonusEl = document.getElementById('bonus-check');
+  const jpy = parseFloat(jpyEl.value);
+  if (!jpy || jpy <= 0) { jpyEl.focus(); return; }
+
+  state.transactions.push({
+    id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    jpy: jpy,
+    twd: jpy * state.fxRate,
+    bonus: bonusEl.checked,
+    note: noteEl.value.trim(),
+    ts: Date.now()
+  });
+  jpyEl.value = '';
+  noteEl.value = '';
+  bonusEl.checked = true;
+  document.getElementById('preview-twd').textContent = '≈ NT$0';
+  saveState();
+  render();
+  jpyEl.focus();
+}
+
+function removeTx(id) {
+  state.transactions = state.transactions.filter(t => t.id !== id);
+  saveState();
+  render();
+}
+
+function toggleSettings() {
+  document.getElementById('settings-modal').classList.toggle('open');
+}
+
+function saveSettings() {
+  const rate = parseFloat(document.getElementById('fx-input').value);
+  if (rate && rate > 0) state.fxRate = rate;
+  saveState();
+  toggleSettings();
+  render();
+}
+
+function resetPeriod() {
+  if (!confirm('確定要清空本期所有消費紀錄?\n(用於新的帳單週期開始)')) return;
+  state.transactions = [];
+  saveState();
+  toggleSettings();
+  render();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dbs_eco_japan_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('jpy-input').addEventListener('input', e => {
+  const jpy = parseFloat(e.target.value);
+  document.getElementById('preview-twd').textContent = (jpy && jpy > 0)
+    ? '≈ NT$' + Math.round(jpy * state.fxRate).toLocaleString()
+    : '≈ NT$0';
+});
+
+document.getElementById('jpy-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTx();
+});
+
+loadState();
+</script>
+
+</body>
+</html>
