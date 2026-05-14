@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="日本卡追蹤">
 <meta name="theme-color" content="#fafaf7">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>日本刷卡追蹤</title>
 <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23fafaf7'/><circle cx='90' cy='90' r='42' fill='%23C8102E'/></svg>">
 <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23fafaf7'/><circle cx='32' cy='32' r='15' fill='%23C8102E'/></svg>">
@@ -634,6 +637,7 @@ button.secondary:active { background: var(--surface-2); }
       <p class="rate-hint">建議用實際刷卡匯率(現匯約 0.20,刷卡入帳約 0.21,VISA/Master 各家略異)</p>
     </div>
     <button class="primary" onclick="saveSettings()">儲存匯率</button>
+    <button class="secondary" onclick="forceReload()">重新載入頁面(取得最新版)</button>
     <button class="secondary danger" onclick="resetCurrentCard()">清空目前卡片紀錄</button>
     <button class="secondary danger" onclick="resetAll()">重置全部(新帳單週期)</button>
     <button class="secondary" onclick="exportData()">匯出資料(JSON)</button>
@@ -998,6 +1002,12 @@ function resetAll() {
   saveState();
   toggleSettings();
   render();
+}
+
+function forceReload() {
+  // 加 cache-busting query string 強制重抓
+  const url = location.pathname + '?v=' + Date.now();
+  location.replace(url);
 }
 
 function exportData() {
