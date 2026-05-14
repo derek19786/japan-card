@@ -317,15 +317,57 @@ input[type="number"]:focus, input[type="text"]:focus {
 
 .field-jpy input { padding-left: 32px; font-size: 18px; }
 
-.bonus-row {
+.modifiers {
+  margin-bottom: 12px;
+}
+
+.mod-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 0.5px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+
+.mod-row:first-child { border-top: none; padding-top: 4px; }
+
+.mod-row input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  margin: 1px 0 0;
+  flex-shrink: 0;
+}
+
+.mod-body { flex: 1; min-width: 0; }
+
+.mod-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.mod-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.mod-row.capped-out .mod-label { color: var(--text-3); }
+
+.preview-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-  gap: 12px;
+  margin: 6px 0 14px;
+  padding-top: 12px;
+  border-top: 0.5px solid var(--border);
 }
 
-.bonus-row.hidden { display: none; }
+.modifiers:empty + .preview-row { border-top: none; padding-top: 0; }
 
 .checkbox-label {
   display: flex;
@@ -607,11 +649,9 @@ button.secondary:active { background: var(--surface-2); }
       <input type="text" id="note-input" placeholder="例如:松本清、一蘭" />
     </div>
     <p class="note-box" id="card-note"></p>
-    <div class="bonus-row" id="bonus-row">
-      <label class="checkbox-label">
-        <input type="checkbox" id="bonus-check" checked />
-        <span id="bonus-label">符合加碼</span>
-      </label>
+    <div class="modifiers" id="modifiers-list"></div>
+    <div class="preview-row">
+      <span class="label">預估</span>
       <span id="preview-twd" class="preview">≈ NT$0</span>
     </div>
     <button class="primary" onclick="addTx()">新增到此卡</button>
@@ -646,7 +686,7 @@ button.secondary:active { background: var(--surface-2); }
 </div>
 
 <script>
-const KEY = 'jp_card_tracker_v2';
+const KEY = 'jp_card_tracker_v3';
 
 // 2026 H1 卡片設定
 const CARDS = {
@@ -655,48 +695,52 @@ const CARDS = {
     short: 'eco',
     color: '#C8102E',
     baseRate: 0.01,
-    bonusRate: 0.05,
-    bonusCapTwd: 15000,
-    bonusLabel: '符合 5% 加碼',
-    note: '海外實體刷卡或 Apple/Samsung Pay。加碼 4% 每期上限 600 點(≈刷 NT$15,000),超過只剩 1%。'
+    modifiers: [
+      { key: 'overseas', label: '海外實體 / 行動支付 +4%', rateBonus: 0.04, capTwd: 15000, hint: '加碼 4% 每期上限 600 點(≈刷 NT$15,000)', default: true }
+    ],
+    note: '海外實體刷卡或 Apple/Samsung Pay 在指定國家可享 5%。'
   },
   dbs_eco_ez: {
     name: '星展 eco 極簡',
     short: 'eco極簡',
     color: '#FF8C42',
     baseRate: 0.01,
-    bonusRate: 0.05,
-    bonusCapTwd: 15000,
-    bonusLabel: '符合 5% 加碼',
-    note: '海外實體刷卡或行動支付。加碼 4% 每期上限 600 點(≈刷 NT$15,000),超過只剩 1%。'
+    modifiers: [
+      { key: 'overseas', label: '海外實體 / 行動支付 +4%', rateBonus: 0.04, capTwd: 15000, hint: '加碼 4% 每期上限 600 點(≈刷 NT$15,000)', default: true }
+    ],
+    note: '海外實體刷卡或行動支付在指定國家可享 5%。'
   },
   ub_jiho: {
     name: '聯邦吉鶴',
     short: '吉鶴',
     color: '#E60012',
     baseRate: 0.025,
-    bonusRate: null,
-    bonusCapTwd: null,
-    note: '日幣消費 2.5% 無上限。加 Apple Pay+前期帳單滿3萬可達 5%;指定通路、新戶加碼最高 11%(此處只計 2.5% 基礎)。'
+    modifiers: [
+      { key: 'apple_pay', label: 'Apple Pay 加碼 +2.5%', rateBonus: 0.025, capTwd: null, hint: '前期帳單滿 NT$30,000 + Apple Pay 實體單筆 ≥ ¥100' },
+      { key: 'designated', label: '指定通路 +3%', rateBonus: 0.03, capTwd: null, hint: '日本超商、量販、百貨、遊樂園等指定通路' },
+      { key: 'new_customer', label: '新戶加碼 +3%', rateBonus: 0.03, capTwd: null, hint: '2026/1/1–6/30 新戶於日本實體店' }
+    ],
+    note: '日幣消費 2.5% 無上限為基礎,可疊加多種加碼最高 11%。'
   },
   esun_kumamon: {
     name: '玉山熊本熊',
     short: '熊本熊',
     color: '#1a1a1a',
     baseRate: 0.025,
-    bonusRate: 0.085,
-    bonusCapTwd: 8333,
-    bonusLabel: '指定店 8.5% 加碼',
-    note: '日本一般 2.5% 無上限;指定店加碼 +6%(8.5%)每期上限 500 點(≈刷 NT$8,333),超過回到 2.5%。'
+    modifiers: [
+      { key: 'designated', label: '指定店加碼 +6%', rateBonus: 0.06, capTwd: 8333, hint: '每期回饋上限 500 點(≈刷 NT$8,333),超過回到 2.5%' }
+    ],
+    note: '日本一般 2.5% 無上限;指定店再加 +6%。'
   },
   taishin_richart: {
     name: '台新 Richart',
     short: 'Richart',
     color: '#E84A6D',
     baseRate: 0.033,
-    bonusRate: null,
-    bonusCapTwd: null,
-    note: '玩旅刷海外 3.3% 無上限。4/1 起美元帳戶 ≥ US$700 可達 8.5%(此處按 3.3% 計算)。'
+    modifiers: [
+      { key: 'usd_account', label: '美元帳戶 ≥ US$700 +5.2%', rateBonus: 0.052, capTwd: null, hint: '2026/4/1 起,Richart 美元帳戶 ≥ US$700 並完成登錄' }
+    ],
+    note: '玩旅刷海外 3.3% 無上限為基礎,符合條件可達 8.5%。'
   }
 };
 
@@ -705,8 +749,24 @@ const CARD_ORDER = ['dbs_eco', 'dbs_eco_ez', 'ub_jiho', 'esun_kumamon', 'taishin
 let state = {
   transactions: [],
   fxRate: 0.21,
-  activeCardId: 'dbs_eco'
+  activeCardId: 'dbs_eco',
+  // Last-used modifier selections per card (persisted so user doesn't re-tick every time)
+  selectedMods: {}
 };
+
+function getSelectedMods(cardId) {
+  const card = CARDS[cardId];
+  if (state.selectedMods[cardId]) {
+    return state.selectedMods[cardId].filter(k => card.modifiers.some(m => m.key === k));
+  }
+  // Default: only mods marked default
+  return card.modifiers.filter(m => m.default).map(m => m.key);
+}
+
+function setSelectedMods(cardId, mods) {
+  state.selectedMods[cardId] = mods;
+  saveState();
+}
 
 function loadState() {
   try {
@@ -715,16 +775,37 @@ function loadState() {
       const parsed = JSON.parse(raw);
       Object.assign(state, parsed);
     } else {
-      // Migrate v1
-      const v1 = localStorage.getItem('dbs_eco_tracker_v1');
-      if (v1) {
-        const old = JSON.parse(v1);
-        state.transactions = (old.transactions || []).map(t => ({ ...t, cardId: 'dbs_eco' }));
+      // Migrate v2 → v3 (bonus boolean → mods array)
+      const v2 = localStorage.getItem('jp_card_tracker_v2');
+      if (v2) {
+        const old = JSON.parse(v2);
+        state.transactions = old.transactions || [];
         state.fxRate = old.fxRate || 0.21;
+        state.activeCardId = old.activeCardId || 'dbs_eco';
+      } else {
+        // Migrate v1 (single-card legacy)
+        const v1 = localStorage.getItem('dbs_eco_tracker_v1');
+        if (v1) {
+          const old = JSON.parse(v1);
+          state.transactions = (old.transactions || []).map(t => ({ ...t, cardId: 'dbs_eco' }));
+          state.fxRate = old.fxRate || 0.21;
+        }
       }
     }
-    // Ensure all transactions have a cardId
-    state.transactions.forEach(tx => { if (!tx.cardId || !CARDS[tx.cardId]) tx.cardId = 'dbs_eco'; });
+    // Normalize every tx
+    state.transactions.forEach(tx => {
+      if (!tx.cardId || !CARDS[tx.cardId]) tx.cardId = 'dbs_eco';
+      if (!Array.isArray(tx.mods)) {
+        // Migrate from old `bonus` boolean: if true, apply first modifier of card
+        const card = CARDS[tx.cardId];
+        if (tx.bonus && card.modifiers.length > 0) {
+          tx.mods = [card.modifiers[0].key];
+        } else {
+          tx.mods = [];
+        }
+        delete tx.bonus;
+      }
+    });
   } catch (e) {}
   render();
 }
@@ -736,7 +817,8 @@ function saveState() {
 function computeCardStats(cardId) {
   const card = CARDS[cardId];
   const txs = state.transactions.filter(t => t.cardId === cardId);
-  let bonusSpent = 0;
+  const usedByMod = {};   // mod key → twd consumed under that modifier
+  card.modifiers.forEach(m => { usedByMod[m.key] = 0; });
   let totalSpent = 0;
   let totalJpy = 0;
   let cashback = 0;
@@ -744,26 +826,38 @@ function computeCardStats(cardId) {
   txs.forEach(tx => {
     totalSpent += tx.twd;
     totalJpy += tx.jpy;
-    if (card.bonusRate != null && tx.bonus) {
-      const room = Math.max(0, card.bonusCapTwd - bonusSpent);
-      const bonusPart = Math.min(tx.twd, room);
-      const basePart = tx.twd - bonusPart;
-      cashback += bonusPart * card.bonusRate + basePart * card.baseRate;
-      bonusSpent += tx.twd;
-    } else {
-      cashback += tx.twd * card.baseRate;
-    }
+    cashback += tx.twd * card.baseRate;
+    (tx.mods || []).forEach(modKey => {
+      const mod = card.modifiers.find(m => m.key === modKey);
+      if (!mod) return;
+      const used = usedByMod[modKey] || 0;
+      const eligible = mod.capTwd != null
+        ? Math.min(tx.twd, Math.max(0, mod.capTwd - used))
+        : tx.twd;
+      cashback += eligible * mod.rateBonus;
+      usedByMod[modKey] = used + tx.twd;
+    });
   });
+
+  // Find the "primary" capped modifier for the cap-card progress display (first capped mod)
+  const cappedMod = card.modifiers.find(m => m.capTwd != null);
+  const primaryUsed = cappedMod ? Math.min(usedByMod[cappedMod.key] || 0, cappedMod.capTwd) : 0;
+  const primaryRoomLeft = cappedMod ? Math.max(0, cappedMod.capTwd - (usedByMod[cappedMod.key] || 0)) : null;
 
   return {
     txs,
     cashback,
     totalSpent,
     totalJpy,
-    bonusSpent,
-    bonusCapUsed: card.bonusCapTwd ? Math.min(bonusSpent, card.bonusCapTwd) : 0,
-    bonusRoomLeft: card.bonusCapTwd ? Math.max(0, card.bonusCapTwd - bonusSpent) : null
+    usedByMod,
+    cappedMod,
+    primaryUsed,
+    primaryRoomLeft
   };
+}
+
+function maxRate(card) {
+  return card.baseRate + card.modifiers.reduce((s, m) => s + m.rateBonus, 0);
 }
 
 function renderChips() {
@@ -771,15 +865,16 @@ function renderChips() {
   wrap.innerHTML = CARD_ORDER.map(id => {
     const c = CARDS[id];
     const s = computeCardStats(id);
+    const max = maxRate(c);
     let rateText;
-    if (c.bonusRate != null) {
-      if (s.bonusRoomLeft > 0) {
-        rateText = (c.bonusRate * 100) + '% · 剩 NT$' + Math.round(s.bonusRoomLeft).toLocaleString();
+    if (s.cappedMod) {
+      if (s.primaryRoomLeft > 0) {
+        rateText = '至多 ' + +(max * 100).toFixed(2) + '% · 剩 NT$' + Math.round(s.primaryRoomLeft).toLocaleString();
       } else {
         rateText = (c.baseRate * 100) + '% (加碼用完)';
       }
     } else {
-      rateText = (c.baseRate * 100) + '% 無上限';
+      rateText = '至多 ' + +(max * 100).toFixed(2) + '% 無上限';
     }
     const active = id === state.activeCardId ? ' active' : '';
     return '<div class="chip' + active + '" onclick="selectCard(\'' + id + '\')">' +
@@ -813,16 +908,16 @@ function render() {
   // Reset any inline background from previous render
   progress.style.background = '';
 
-  if (card.bonusCapTwd != null) {
+  if (s.cappedMod) {
     progressTrack.style.display = '';
-    capLabel.textContent = card.bonusLabel.replace('符合 ', '').replace(' 加碼', '') + ' 額度已用';
-    capUsed.textContent = 'NT$' + Math.round(s.bonusCapUsed).toLocaleString();
-    capDenom.textContent = '/ NT$' + card.bonusCapTwd.toLocaleString();
-    const pct = Math.min(100, (s.bonusCapUsed / card.bonusCapTwd) * 100);
+    capLabel.textContent = s.cappedMod.label.replace(/\s*\+\d+(\.\d+)?%/, '') + ' 額度';
+    capUsed.textContent = 'NT$' + Math.round(s.primaryUsed).toLocaleString();
+    capDenom.textContent = '/ NT$' + s.cappedMod.capTwd.toLocaleString();
+    const pct = Math.min(100, (s.primaryUsed / s.cappedMod.capTwd) * 100);
     progress.style.width = pct + '%';
     progress.className = 'progress-fill' + (pct >= 100 ? ' danger' : pct >= 80 ? ' warn' : '');
 
-    const remaining = s.bonusRoomLeft;
+    const remaining = s.primaryRoomLeft;
     if (s.txs.length === 0) {
       statusEl.textContent = '尚未開始';
       statusEl.className = 'status';
@@ -834,21 +929,21 @@ function render() {
     } else if (remaining > 0) {
       statusEl.textContent = '快達上限';
       statusEl.className = 'status warn';
-      hintEl.textContent = '注意!加碼只剩 NT$' + Math.round(remaining).toLocaleString() + ',刷完只剩 ' + (card.baseRate * 100) + '% 基本回饋';
+      hintEl.textContent = '注意!加碼只剩 NT$' + Math.round(remaining).toLocaleString() + ',刷完回到 ' + (card.baseRate * 100) + '% 基本回饋';
     } else {
       statusEl.textContent = '已達上限';
       statusEl.className = 'status danger';
       hintEl.textContent = '加碼已達上限,建議換其他卡繼續刷';
     }
   } else {
-    // 無上限卡 — 隱藏進度條,改顯示累積金額
+    // 無 capped modifier — 隱藏進度條,改顯示累積金額
     progressTrack.style.display = 'none';
     capLabel.textContent = '本卡日本累積';
     capUsed.textContent = 'NT$' + Math.round(s.totalSpent).toLocaleString();
-    capDenom.textContent = '· ' + (card.baseRate * 100) + '% 無上限';
+    capDenom.textContent = '· 至多 ' + +(maxRate(card) * 100).toFixed(2) + '%';
     statusEl.textContent = s.txs.length === 0 ? '尚未開始' : '無上限';
     statusEl.className = 'status' + (s.txs.length === 0 ? '' : ' success');
-    hintEl.textContent = s.txs.length === 0 ? '新增第一筆消費開始追蹤' : '此卡無加碼上限,持續刷享 ' + (card.baseRate * 100) + '%';
+    hintEl.textContent = s.txs.length === 0 ? '新增第一筆消費開始追蹤' : '此卡加碼無上限,持續刷享所選加碼';
   }
 
   // Card cashback / spent
@@ -866,15 +961,27 @@ function render() {
   document.getElementById('total-cashback').textContent = Math.round(totalCashback).toLocaleString() + ' 點';
   document.getElementById('total-spent').textContent = '已刷 NT$' + Math.round(totalSpent).toLocaleString() + ' · ¥' + Math.round(totalJpy).toLocaleString();
 
-  // Note + bonus row visibility
+  // Note + modifier checkboxes
   document.getElementById('card-note').textContent = card.note;
-  const bonusRow = document.getElementById('bonus-row');
-  if (card.bonusRate != null) {
-    bonusRow.classList.remove('hidden');
-    document.getElementById('bonus-label').textContent = card.bonusLabel;
-  } else {
-    bonusRow.classList.add('hidden');
-  }
+  const modsEl = document.getElementById('modifiers-list');
+  const selected = getSelectedMods(state.activeCardId);
+  modsEl.innerHTML = card.modifiers.map(m => {
+    const checked = selected.includes(m.key) ? 'checked' : '';
+    const used = s.usedByMod[m.key] || 0;
+    let tag = '';
+    if (m.capTwd != null) {
+      const left = Math.max(0, m.capTwd - used);
+      tag = ' <span style="color:var(--text-3);">· 剩 NT$' + Math.round(left).toLocaleString() + '</span>';
+    }
+    const hint = m.hint ? '<div class="mod-hint">' + escapeHtml(m.hint) + tag + '</div>' : (tag ? '<div class="mod-hint">' + tag + '</div>' : '');
+    return '<label class="mod-row">' +
+      '<input type="checkbox" data-mod="' + m.key + '" ' + checked + ' onchange="onModChange()">' +
+      '<div class="mod-body">' +
+        '<div class="mod-label">' + escapeHtml(m.label) + '</div>' +
+        hint +
+      '</div>' +
+    '</label>';
+  }).join('');
   updatePreview();
 
   // Summary list
@@ -901,11 +1008,20 @@ function render() {
   } else {
     listEl.innerHTML = cardTxs.slice().reverse().map(tx => {
       const note = tx.note ? ' · <span style="color: var(--text-2);">' + escapeHtml(tx.note) + '</span>' : '';
-      const flag = (card.bonusRate != null && !tx.bonus) ? ' · 無加碼' : '';
-      return '<div class="tx-row' + (card.bonusRate != null && !tx.bonus ? ' no-bonus' : '') + '">' +
+      const txMods = tx.mods || [];
+      const hasMods = card.modifiers.length > 0;
+      const noBonus = hasMods && txMods.length === 0;
+      // Effective rate for this tx
+      const effRate = card.baseRate + txMods.reduce((s, k) => {
+        const m = card.modifiers.find(mm => mm.key === k);
+        return s + (m ? m.rateBonus : 0);
+      }, 0);
+      const rateTag = ' · ' + +(effRate * 100).toFixed(2) + '%';
+      const noBonusTag = noBonus ? ' · 無加碼' : '';
+      return '<div class="tx-row' + (noBonus ? ' no-bonus' : '') + '">' +
         '<div class="tx-info">' +
           '<div class="tx-main">¥' + tx.jpy.toLocaleString() + note + '</div>' +
-          '<div class="tx-meta">NT$' + Math.round(tx.twd).toLocaleString() + flag + '</div>' +
+          '<div class="tx-meta">NT$' + Math.round(tx.twd).toLocaleString() + rateTag + noBonusTag + '</div>' +
         '</div>' +
         '<button class="tx-delete" onclick="removeTx(\'' + tx.id + '\')" aria-label="刪除">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
@@ -921,49 +1037,62 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function readCheckedMods() {
+  return Array.from(document.querySelectorAll('#modifiers-list input[type=checkbox]'))
+    .filter(el => el.checked)
+    .map(el => el.dataset.mod);
+}
+
+function onModChange() {
+  setSelectedMods(state.activeCardId, readCheckedMods());
+  updatePreview();
+}
+
 function updatePreview() {
   const jpy = parseFloat(document.getElementById('jpy-input').value);
   const card = CARDS[state.activeCardId];
-  const bonus = document.getElementById('bonus-check').checked;
+  const previewEl = document.getElementById('preview-twd');
   if (!jpy || jpy <= 0) {
-    document.getElementById('preview-twd').textContent = '≈ NT$0';
+    previewEl.textContent = '≈ NT$0';
     return;
   }
   const twd = jpy * state.fxRate;
-  // Estimate cashback for this single tx given current cap usage
   const s = computeCardStats(state.activeCardId);
-  let cb = 0;
-  if (card.bonusRate != null && bonus) {
-    const room = Math.max(0, card.bonusCapTwd - s.bonusSpent);
-    const bonusPart = Math.min(twd, room);
-    const basePart = twd - bonusPart;
-    cb = bonusPart * card.bonusRate + basePart * card.baseRate;
-  } else {
-    cb = twd * card.baseRate;
-  }
-  document.getElementById('preview-twd').textContent =
+  const checked = readCheckedMods();
+  let cb = twd * card.baseRate;
+  checked.forEach(modKey => {
+    const mod = card.modifiers.find(m => m.key === modKey);
+    if (!mod) return;
+    const used = s.usedByMod[modKey] || 0;
+    const eligible = mod.capTwd != null
+      ? Math.min(twd, Math.max(0, mod.capTwd - used))
+      : twd;
+    cb += eligible * mod.rateBonus;
+  });
+  previewEl.textContent =
     '≈ NT$' + Math.round(twd).toLocaleString() + ' · 回饋 ' + Math.round(cb) + ' 點';
 }
 
 function addTx() {
   const jpyEl = document.getElementById('jpy-input');
   const noteEl = document.getElementById('note-input');
-  const bonusEl = document.getElementById('bonus-check');
   const jpy = parseFloat(jpyEl.value);
   if (!jpy || jpy <= 0) { jpyEl.focus(); return; }
+
+  const mods = readCheckedMods();
+  setSelectedMods(state.activeCardId, mods);
 
   state.transactions.push({
     id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
     cardId: state.activeCardId,
     jpy: jpy,
     twd: jpy * state.fxRate,
-    bonus: bonusEl.checked,
+    mods: mods,
     note: noteEl.value.trim(),
     ts: Date.now()
   });
   jpyEl.value = '';
   noteEl.value = '';
-  bonusEl.checked = true;
   saveState();
   render();
   jpyEl.focus();
@@ -1021,7 +1150,6 @@ function exportData() {
 }
 
 document.getElementById('jpy-input').addEventListener('input', updatePreview);
-document.getElementById('bonus-check').addEventListener('change', updatePreview);
 document.getElementById('jpy-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') addTx();
 });
