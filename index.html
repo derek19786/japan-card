@@ -808,10 +808,27 @@ const CARDS = {
     baseRate: 0.033,
     modifiers: [],
     note: '切換「玩旅刷」方案,海外實體+線上 3.3% 無上限。'
+  },
+  ctbc_uniopen: {
+    name: '中信 uniopen',
+    short: 'uniopen',
+    color: '#00A53D',
+    baseRate: 0.03,
+    modifiers: [
+      {
+        key: 'overseas_phys_bonus',
+        label: '海外實體加碼 +8%',
+        rateBonus: 0.08,
+        capTwd: 6250,
+        hint: '每月回饋上限 500 點(≈刷 NT$6,250),活動期 2026/1/1–6/30',
+        default: true
+      }
+    ],
+    note: '國外實體商店 3% 無上限為基礎(需實體卡或行動支付面對面交易);加碼後最高 11%。'
   }
 };
 
-const CARD_ORDER = ['dbs_eco', 'dbs_eco_ez', 'ub_jiho', 'esun_kumamon', 'taishin_richart'];
+const CARD_ORDER = ['dbs_eco', 'dbs_eco_ez', 'ub_jiho', 'esun_kumamon', 'taishin_richart', 'ctbc_uniopen'];
 
 let state = {
   transactions: [],
