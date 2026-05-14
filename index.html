@@ -576,7 +576,7 @@ button.secondary:active { background: var(--surface-2); }
       <span id="cap-used" class="num">NT$0</span>
       <span id="cap-denom" class="denom">/ NT$15,000</span>
     </div>
-    <div class="progress-track"><div id="progress" class="progress-fill" style="width: 0%;"></div></div>
+    <div class="progress-track" id="progress-track"><div id="progress" class="progress-fill" style="width: 0%;"></div></div>
     <p id="hint" class="hint">新增第一筆消費開始追蹤</p>
   </div>
 
@@ -802,10 +802,15 @@ function render() {
   const capUsed = document.getElementById('cap-used');
   const capDenom = document.getElementById('cap-denom');
   const progress = document.getElementById('progress');
+  const progressTrack = document.getElementById('progress-track');
   const statusEl = document.getElementById('cap-status');
   const hintEl = document.getElementById('hint');
 
+  // Reset any inline background from previous render
+  progress.style.background = '';
+
   if (card.bonusCapTwd != null) {
+    progressTrack.style.display = '';
     capLabel.textContent = card.bonusLabel.replace('符合 ', '').replace(' 加碼', '') + ' 額度已用';
     capUsed.textContent = 'NT$' + Math.round(s.bonusCapUsed).toLocaleString();
     capDenom.textContent = '/ NT$' + card.bonusCapTwd.toLocaleString();
@@ -832,21 +837,14 @@ function render() {
       hintEl.textContent = '加碼已達上限,建議換其他卡繼續刷';
     }
   } else {
-    // No cap card
+    // 無上限卡 — 隱藏進度條,改顯示累積金額
+    progressTrack.style.display = 'none';
     capLabel.textContent = '本卡日本累積';
     capUsed.textContent = 'NT$' + Math.round(s.totalSpent).toLocaleString();
     capDenom.textContent = '· ' + (card.baseRate * 100) + '% 無上限';
-    progress.style.width = '100%';
-    progress.className = 'progress-fill';
-    progress.style.background = card.color;
     statusEl.textContent = s.txs.length === 0 ? '尚未開始' : '無上限';
     statusEl.className = 'status' + (s.txs.length === 0 ? '' : ' success');
     hintEl.textContent = s.txs.length === 0 ? '新增第一筆消費開始追蹤' : '此卡無加碼上限,持續刷享 ' + (card.baseRate * 100) + '%';
-  }
-
-  // Reset progress bg if previously set
-  if (card.bonusCapTwd != null) {
-    progress.style.background = '';
   }
 
   // Card cashback / spent
