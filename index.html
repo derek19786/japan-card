@@ -358,6 +358,55 @@ input[type="number"]:focus, input[type="text"]:focus {
 
 .mod-row.capped-out .mod-label { color: var(--text-3); }
 
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 6px;
+  vertical-align: 1px;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.info-btn:active { background: var(--text-2); color: var(--bg); }
+
+.store-section {
+  margin-bottom: 14px;
+}
+
+.store-section-title {
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.store-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.store-tag {
+  font-size: 13px;
+  padding: 5px 10px;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 100px;
+  color: var(--text);
+}
+
 .preview-row {
   display: flex;
   justify-content: space-between;
@@ -685,6 +734,14 @@ button.secondary:active { background: var(--surface-2); }
   </div>
 </div>
 
+<div class="modal" id="stores-modal" onclick="if(event.target===this)closeStores()">
+  <div class="modal-content">
+    <p class="modal-title" id="stores-title">指定通路</p>
+    <div id="stores-body"></div>
+    <button class="secondary" onclick="closeStores()" style="margin-top:14px;">關閉</button>
+  </div>
+</div>
+
 <script>
 const KEY = 'jp_card_tracker_v3';
 
@@ -728,7 +785,19 @@ const CARDS = {
     color: '#1a1a1a',
     baseRate: 0.025,
     modifiers: [
-      { key: 'designated', label: '指定店加碼 +6%', rateBonus: 0.06, capTwd: 8333, hint: '每期回饋上限 500 點(≈刷 NT$8,333),超過回到 2.5%' }
+      {
+        key: 'designated',
+        label: '指定店加碼 +6%',
+        rateBonus: 0.06,
+        capTwd: 8333,
+        hint: '每期回饋上限 500 點(≈刷 NT$8,333),超過回到 2.5%',
+        storeList: {
+          '交通 / 租車 / 住宿': ['SUICA', 'PASMO', 'ICOCA', 'JR 鐵路', '日本航空', '樂天旅遊', '東橫 INN', '星野集團', 'TOYOTA Rent a Car', 'Times Car Rental', 'NIPPON RENT-A-CAR', 'OTS 租車', 'ORIX 租車'],
+          '樂園 / 景點': ['東京迪士尼樂園', '東京華納兄弟哈利波特影城', '日本環球影城', '豪斯登堡', '九州非洲獅樂園', '名古屋樂高樂園', '吉伊卡哇樂園'],
+          '美食 / 餐廳': ['一蘭拉麵', '鳥貴族', '勝烈亭', '敘敘苑', '牛角', '力丸', '六歌仙', 'Shake Shack', 'DOUTOR Coffee', 'Fuglen', '松屋', 'SUKIYA', '壽司郎', '藏壽司'],
+          '購物 / 藥妝': ['BIC CAMERA', 'Yodobashi', '松本清', '唐吉軻德', '大國藥妝', '無印良品', '日本 MITSUI 購物園區', 'UNIQLO', 'GU']
+        }
+      }
     ],
     note: '日本一般 2.5% 無上限;指定店再加 +6%。'
   },
@@ -972,10 +1041,13 @@ function render() {
       tag = ' <span style="color:var(--text-3);">· 剩 NT$' + Math.round(left).toLocaleString() + '</span>';
     }
     const hint = m.hint ? '<div class="mod-hint">' + escapeHtml(m.hint) + tag + '</div>' : (tag ? '<div class="mod-hint">' + tag + '</div>' : '');
+    const infoBtn = m.storeList
+      ? '<button type="button" class="info-btn" onclick="event.preventDefault();event.stopPropagation();openStores(\'' + state.activeCardId + '\',\'' + m.key + '\')" aria-label="查看清單">i</button>'
+      : '';
     return '<label class="mod-row">' +
       '<input type="checkbox" data-mod="' + m.key + '" ' + checked + ' onchange="onModChange()">' +
       '<div class="mod-body">' +
-        '<div class="mod-label">' + escapeHtml(m.label) + '</div>' +
+        '<div class="mod-label">' + escapeHtml(m.label) + infoBtn + '</div>' +
         hint +
       '</div>' +
     '</label>';
@@ -1104,6 +1176,27 @@ function removeTx(id) {
 
 function toggleSettings() {
   document.getElementById('settings-modal').classList.toggle('open');
+}
+
+function openStores(cardId, modKey) {
+  const card = CARDS[cardId];
+  const mod = card && card.modifiers.find(m => m.key === modKey);
+  if (!mod || !mod.storeList) return;
+  document.getElementById('stores-title').textContent = card.name + ' · ' + mod.label.replace(/\s*\+\d+(\.\d+)?%/, '');
+  const body = document.getElementById('stores-body');
+  body.innerHTML = Object.entries(mod.storeList).map(([section, items]) =>
+    '<div class="store-section">' +
+      '<p class="store-section-title">' + escapeHtml(section) + '</p>' +
+      '<div class="store-tags">' +
+        items.map(it => '<span class="store-tag">' + escapeHtml(it) + '</span>').join('') +
+      '</div>' +
+    '</div>'
+  ).join('') + '<p class="rate-hint">清單依玉山銀行官方公告為主,實際以結帳當下為準。</p>';
+  document.getElementById('stores-modal').classList.add('open');
+}
+
+function closeStores() {
+  document.getElementById('stores-modal').classList.remove('open');
 }
 
 function saveSettings() {
